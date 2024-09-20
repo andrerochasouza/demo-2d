@@ -1,0 +1,14 @@
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+.idea/libraries/
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.vscode/
+/.idea
