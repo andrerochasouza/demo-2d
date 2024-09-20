@@ -16,15 +16,16 @@ public class Enemy extends Entity {
     private int direction; // 0: cima, 1: baixo, 2: esquerda, 3: direita
     private int changeDirectionTimer;
 
-    public Enemy(double x, double y, Map map) {
+    public Enemy(double x, double y, Map map, String path) {
         super(x, y, 32, 32, map);
-        loadSprite();
+        loadSprite(path);
         rand = new Random();
         setRandomDirection();
     }
 
-    private void loadSprite() {
-        sprite = ResourceLoader.loadImage("/images/enemy.png");
+    private void loadSprite(String path) {
+        // Carregar a sprite do inimigo
+        sprite = ResourceLoader.loadImage(path);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class Enemy extends Entity {
 
     private boolean isColliding(double newX, double newY) {
         // Verificar os quatro cantos da entidade
-        int tileSize = 64;
+        int tileSize = map.TILE_SIZE;
         int left = (int)newX / tileSize;
         int right = (int)(newX + width) / tileSize;
         int top = (int)newY / tileSize;

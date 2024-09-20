@@ -21,6 +21,8 @@ public class Player extends Entity {
     }
 
     private void loadSprite() {
+        // Carregar a sprite baseada na definição do tile (supondo que o tile 0 é floor)
+        // Você pode ajustar conforme a necessidade
         sprite = ResourceLoader.loadImage("/images/player.png");
     }
 
@@ -55,7 +57,7 @@ public class Player extends Entity {
 
     private boolean isColliding(double newX, double newY) {
         // Verificar os quatro cantos da entidade
-        int tileSize = 64;
+        int tileSize = map.TILE_SIZE;
         int left = (int)newX / tileSize;
         int right = (int)(newX + width) / tileSize;
         int top = (int)newY / tileSize;

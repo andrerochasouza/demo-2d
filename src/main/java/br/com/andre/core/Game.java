@@ -4,6 +4,8 @@ import br.com.andre.entities.Enemy;
 import br.com.andre.entities.Player;
 import br.com.andre.input.KeyManager;
 import br.com.andre.map.Map;
+import br.com.andre.map.MapStructure;
+import br.com.andre.map.TileDefinition;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -18,14 +20,26 @@ public class Game extends JPanel implements Runnable {
     // Constantes de tamanho da janela
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
-    public static final String GAME_TITLE = "TOP DOWN DEMO";
+    public static final String GAME_TITLE = "GAME TOP DOWN";
+
+    // Buffer de imagem para renderização
     private BufferedImage image;
     private Graphics g;
+
+    // Thread do jogo
     private Thread thread;
     private boolean running = false;
+
+    // Input
     private KeyManager keyManager;
+
+    // Game Loop
     private GameLoop gameLoop;
+
+    // Mapa
     private Map map;
+
+    // Entidades
     private Player player;
     private List<Enemy> enemies;
 
@@ -46,16 +60,40 @@ public class Game extends JPanel implements Runnable {
         image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         g = image.getGraphics();
 
-        // Inicializar o mapa
-        map = new Map("/images/floor.png", "/images/wall.png");
+        // Inicializar o mapa a partir do arquivo de estrutura
+        map = new Map("/maps/struct.txt");
+
+        // Definir o mapa inicial
+        map.setCurrentMap("Maze"); // Você pode mudar para "Forest" ou outro mapa definido
 
         // Inicializar o jogador
-        player = new Player(100, 100, map, keyManager);
+        // Localização inicial do jogador (em pixels)
+        int playerStartX = 100;
+        int playerStartY = 100;
+        player = new Player(playerStartX, playerStartY, map, keyManager);
 
-        // Inicializar inimigos
+        // Inicializar inimigos com base no mapa
         enemies = new ArrayList<>();
-        enemies.add(new Enemy(300, 200, map));
-        enemies.add(new Enemy(500, 400, map));
+        initializeEnemies();
+    }
+
+    private void initializeEnemies() {
+        MapStructure currentMap = map.getCurrentMap();
+        if (currentMap == null) return;
+
+        int[][] grid = currentMap.getGrid();
+        for (int y = 0; y < grid.length; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
+                int tileNumber = grid[y][x];
+                TileDefinition tileDef = currentMap.getTileDefinition(tileNumber);
+                if (tileDef != null && tileDef.isEnemy()) {
+                    // Criar inimigo na posição central do tile
+                    int enemyX = x * map.TILE_SIZE + (map.TILE_SIZE - 32) / 2;
+                    int enemyY = y * map.TILE_SIZE + (map.TILE_SIZE - 32) / 2;
+                    enemies.add(new Enemy(enemyX, enemyY, map, "/images/" + tileDef.getSpriteName() + ".png"));
+                }
+            }
+        }
     }
 
     public synchronized void start() {
@@ -97,7 +135,7 @@ public class Game extends JPanel implements Runnable {
     public void render() {
         if (g != null) {
             // Limpar a tela
-            g.drawImage(map.getBackground(), 0, 0, WIDTH, HEIGHT, null);
+            g.clearRect(0, 0, WIDTH, HEIGHT);
 
             // Renderizar o mapa
             map.render(g);

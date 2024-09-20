@@ -1,0 +1,13 @@
+# Definição dos mapas
+map Maze
+ibj
+1 1 1 1 1 1 1 1 1 1 1 1 1
+1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 2 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 1
+1 1 1 1 1 1 1 1 1 1 1 1 1
+
+# Definições de tiles para o mapa Maze
+obj 1 wall true false # wall = wall.png / true = sólido / false = não é inimigo
+obj 0 floor false false # floor = floor.png / false = não é sólido / false = não é inimigo
+obj 2 enemy false true # enemy = enemy.png / false = não é sólido / true = é inimigo
