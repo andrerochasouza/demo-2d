@@ -1,9 +1,11 @@
 package br.com.andre;
 
+import br.com.andre.core.Game;
+import br.com.andre.core.Window;
+
 public class Main {
     public static void main(String[] args) {
-        for (int i = 1; i <= 5; i++) {
-            System.out.println("i = " + i);
-        }
+        Game game = new Game();
+        new Window(Game.GAME_TITLE, Game.WIDTH, Game.HEIGHT, game);
     }
 }
