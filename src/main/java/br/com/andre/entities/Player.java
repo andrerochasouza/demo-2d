@@ -1,10 +1,12 @@
 package br.com.andre.entities;
 
+import br.com.andre.camera.Camera;
 import br.com.andre.input.KeyManager;
 import br.com.andre.map.Map;
 import br.com.andre.utils.ResourceLoader;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
@@ -21,8 +23,7 @@ public class Player extends Entity {
     }
 
     private void loadSprite() {
-        // Carregar a sprite baseada na definição do tile (supondo que o tile 0 é floor)
-        // Você pode ajustar conforme a necessidade
+        // Carregar a sprite baseada na definição do tile
         sprite = ResourceLoader.loadImage("/images/player.png");
     }
 
@@ -57,11 +58,11 @@ public class Player extends Entity {
 
     private boolean isColliding(double newX, double newY) {
         // Verificar os quatro cantos da entidade
-        int tileSize = map.TILE_SIZE;
-        int left = (int)newX / tileSize;
-        int right = (int)(newX + width) / tileSize;
-        int top = (int)newY / tileSize;
-        int bottom = (int)(newY + height) / tileSize;
+        int tileSize = map.getTileSize();
+        int left = (int) newX / tileSize;
+        int right = (int) (newX + width) / tileSize;
+        int top = (int) newY / tileSize;
+        int bottom = (int) (newY + height) / tileSize;
 
         if (map.isSolidTile(left, top) || map.isSolidTile(right, top) ||
                 map.isSolidTile(left, bottom) || map.isSolidTile(right, bottom)) {
@@ -72,13 +73,37 @@ public class Player extends Entity {
     }
 
     @Override
-    public void render(Graphics g) {
+    public void render(Graphics g, Camera camera) {
         if (sprite != null) {
-            g.drawImage(sprite, (int)x, (int)y, width, height, null);
+            // Apenas renderizar se estiver dentro da área visível
+            if (isVisible(camera)) {
+                g.drawImage(sprite,
+                        (int) (x - camera.getX()),
+                        (int) (y - camera.getY()),
+                        width, height, null);
+            }
         } else {
             // Desenhar um retângulo azul se a sprite não estiver disponível
-            g.setColor(java.awt.Color.BLUE);
-            g.fillRect((int)x, (int)y, width, height);
+            if (isVisible(camera)) {
+                g.setColor(java.awt.Color.BLUE);
+                g.fillRect((int) (x - camera.getX()), (int) (y - camera.getY()), width, height);
+            }
         }
+    }
+
+    private boolean isVisible(Camera camera) {
+        return x + width > camera.getX() &&
+                x < camera.getX() + camera.getWidth() &&
+                y + height > camera.getY() &&
+                y < camera.getY() + camera.getHeight();
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle((int) x, (int) y, width, height);
+    }
+
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
     }
 }

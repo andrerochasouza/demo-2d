@@ -1,5 +1,6 @@
 package br.com.andre.entities;
 
+import br.com.andre.camera.Camera;
 import br.com.andre.map.Map;
 
 import java.awt.Graphics;
@@ -19,9 +20,49 @@ public abstract class Entity {
     }
 
     public abstract void update();
-    public abstract void render(Graphics g);
+    public abstract void render(Graphics g, Camera camera);
 
     public Rectangle getBounds() {
         return new Rectangle((int)x, (int)y, width, height);
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public Map getMap() {
+        return map;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
     }
 }

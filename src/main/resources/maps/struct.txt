@@ -1,13 +1,44 @@
 # Definição dos mapas
+
 map Maze
 ibj
-1 1 1 1 1 1 1 1 1 1 1 1 1
-1 0 0 0 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 2 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 0 0 0 1
-1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 2 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 2 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 2 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 2 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
 # Definições de tiles para o mapa Maze
-obj 1 wall true false # wall = wall.png / true = sólido / false = não é inimigo
-obj 0 floor false false # floor = floor.png / false = não é sólido / false = não é inimigo
-obj 2 enemy false true # enemy = enemy.png / false = não é sólido / true = é inimigo
+obj 1 wall true false
+obj 0 floor false false
+obj 2 enemy false true
+obj 3 portal false false
+
+# Definição dos portais para o mapa Maze
+portal Maze MainPortal 12 2 Forest 1 1
+
+map Forest
+ibj
+1 1 1 1 1 1 1 1 1 1
+1 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 4 0 0 3 1
+1 0 0 0 0 0 0 0 0 1
+1 1 1 1 1 1 1 1 1 1
+
+# Definições de tiles para o mapa Forest
+obj 1 wall true false
+obj 0 floor false false
+obj 3 portal false false
+obj 4 enemy false true
+
+# Definição dos portais para o mapa Forest
+portal Forest ExitPortal 8 2 Maze 5 3

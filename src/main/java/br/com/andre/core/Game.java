@@ -1,11 +1,13 @@
 package br.com.andre.core;
 
+import br.com.andre.camera.Camera;
 import br.com.andre.entities.Enemy;
 import br.com.andre.entities.Player;
 import br.com.andre.input.KeyManager;
 import br.com.andre.map.Map;
 import br.com.andre.map.MapStructure;
 import br.com.andre.map.TileDefinition;
+import br.com.andre.portal.PortalManager;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -43,15 +45,19 @@ public class Game extends JPanel implements Runnable {
     private Player player;
     private List<Enemy> enemies;
 
+    // Câmera
+    private Camera camera;
+
+    // Portal Manager
+    private PortalManager portalManager;
+
     public Game() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setFocusable(true);
         requestFocus();
-
+        setDoubleBuffered(true); // Habilitar double buffering
         keyManager = new KeyManager();
         addKeyListener(keyManager);
-
-        // Inicializar recursos
         init();
     }
 
@@ -66,6 +72,12 @@ public class Game extends JPanel implements Runnable {
         // Definir o mapa inicial
         map.setCurrentMap("Maze"); // Você pode mudar para "Forest" ou outro mapa definido
 
+        // Inicializar a câmera
+        camera = new Camera(WIDTH, HEIGHT, map);
+
+        // Inicializar o PortalManager
+        portalManager = new PortalManager(map);
+
         // Inicializar o jogador
         // Localização inicial do jogador (em pixels)
         int playerStartX = 100;
@@ -78,6 +90,7 @@ public class Game extends JPanel implements Runnable {
     }
 
     private void initializeEnemies() {
+        enemies.clear();
         MapStructure currentMap = map.getCurrentMap();
         if (currentMap == null) return;
 
@@ -88,12 +101,22 @@ public class Game extends JPanel implements Runnable {
                 TileDefinition tileDef = currentMap.getTileDefinition(tileNumber);
                 if (tileDef != null && tileDef.isEnemy()) {
                     // Criar inimigo na posição central do tile
-                    int enemyX = x * map.TILE_SIZE + (map.TILE_SIZE - 32) / 2;
-                    int enemyY = y * map.TILE_SIZE + (map.TILE_SIZE - 32) / 2;
-                    enemies.add(new Enemy(enemyX, enemyY, map, "/images/" + tileDef.getSpriteName() + ".png"));
+                    int enemyX = x * map.getTileSize() + (map.getTileSize() - 32) / 2;
+                    int enemyY = y * map.getTileSize() + (map.getTileSize() - 32) / 2;
+                    String path = "/images/" + tileDef.getSpriteName() + ".png";
+                    enemies.add(new Enemy(enemyX, enemyY, map, path));
                 }
             }
         }
+    }
+
+    // Método para trocar de mapa
+    public void switchMap(String mapName) {
+        map.setCurrentMap(mapName);
+        // Reposicionar o jogador conforme necessário
+        player.setPosition(100, 100); // Exemplo: reposicionar no início
+        // Re-inicializar inimigos
+        initializeEnemies();
     }
 
     public synchronized void start() {
@@ -122,13 +145,19 @@ public class Game extends JPanel implements Runnable {
             enemy.update();
         }
 
+        // Atualizar a câmera para seguir o jogador
+        camera.update(player);
+
         // Verificar colisões entre jogador e inimigos
         for (Enemy enemy : enemies) {
             if (player.getBounds().intersects(enemy.getBounds())) {
                 System.out.println("Colisão detectada! Implementar lógica de dano ou fim de jogo.");
-                // Aqui você pode implementar a lógica de fim de jogo, reduzir a vida do jogador, etc.
+                // Implementar lógica de dano ou fim de jogo
             }
         }
+
+        // Verificar se o jogador entrou em um portal
+        portalManager.checkPortals(player);
     }
 
     // Renderizar o jogo
@@ -137,15 +166,15 @@ public class Game extends JPanel implements Runnable {
             // Limpar a tela
             g.clearRect(0, 0, WIDTH, HEIGHT);
 
-            // Renderizar o mapa
-            map.render(g);
+            // Renderizar o mapa com a câmera
+            map.render(g, camera);
 
             // Renderizar o jogador
-            player.render(g);
+            player.render(g, camera);
 
             // Renderizar inimigos
             for (Enemy enemy : enemies) {
-                enemy.render(g);
+                enemy.render(g, camera);
             }
 
             // Desenhar o buffer na tela
