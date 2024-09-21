@@ -1,7 +1,7 @@
 package br.com.andre.entities;
 
 import br.com.andre.camera.Camera;
-import br.com.andre.map.Map;
+import br.com.andre.map.GameMap;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -9,14 +9,14 @@ import java.awt.Rectangle;
 public abstract class Entity {
     protected double x, y;
     protected int width, height;
-    protected Map map;
+    protected GameMap gameMap;
 
-    public Entity(double x, double y, int width, int height, Map map) {
+    public Entity(double x, double y, int width, int height, GameMap gameMap) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.map = map;
+        this.gameMap = gameMap;
     }
 
     public abstract void update();
@@ -58,11 +58,11 @@ public abstract class Entity {
         this.height = height;
     }
 
-    public Map getMap() {
-        return map;
+    public GameMap getGameMap() {
+        return gameMap;
     }
 
-    public void setMap(Map map) {
-        this.map = map;
+    public void setGameMap(GameMap gameMap) {
+        this.gameMap = gameMap;
     }
 }

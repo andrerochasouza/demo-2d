@@ -2,11 +2,12 @@ package br.com.andre.core;
 
 import br.com.andre.camera.Camera;
 import br.com.andre.entities.Enemy;
+import br.com.andre.entities.NPC;
 import br.com.andre.entities.Player;
 import br.com.andre.input.KeyManager;
-import br.com.andre.map.Map;
+import br.com.andre.map.MapLoader;
 import br.com.andre.map.MapStructure;
-import br.com.andre.map.TileDefinition;
+import br.com.andre.map.GameMap;
 import br.com.andre.portal.PortalManager;
 
 import javax.swing.JPanel;
@@ -39,17 +40,21 @@ public class Game extends JPanel implements Runnable {
     private GameLoop gameLoop;
 
     // Mapa
-    private Map map;
+    private GameMap gameMap;
 
     // Entidades
     private Player player;
-    private List<Enemy> enemies;
+    private List<Enemy> enemies = new ArrayList<>();
+    private List<NPC> npcs = new ArrayList<>();
 
     // Câmera
     private Camera camera;
 
     // Portal Manager
     private PortalManager portalManager;
+
+    // MapLoader
+    private MapLoader mapLoader;
 
     public Game() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -66,57 +71,57 @@ public class Game extends JPanel implements Runnable {
         image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         g = image.getGraphics();
 
-        // Inicializar o mapa a partir do arquivo de estrutura
-        map = new Map("/maps/struct.txt");
-
-        // Definir o mapa inicial
-        map.setCurrentMap("Maze"); // Você pode mudar para "Forest" ou outro mapa definido
+        // Inicializar o MapLoader com struct.txt e npc.txt
+        mapLoader = new MapLoader("/maps/struct.txt", "/maps/npc.txt");
 
         // Inicializar a câmera
-        camera = new Camera(WIDTH, HEIGHT, map);
+        camera = new Camera(WIDTH, HEIGHT, gameMap);
 
         // Inicializar o PortalManager
-        portalManager = new PortalManager(map);
+        portalManager = new PortalManager(gameMap, this);
 
         // Inicializar o jogador
-        // Localização inicial do jogador (em pixels)
         int playerStartX = 100;
         int playerStartY = 100;
-        player = new Player(playerStartX, playerStartY, map, keyManager);
+        player = new Player(playerStartX, playerStartY, gameMap, keyManager);
 
-        // Inicializar inimigos com base no mapa
-        enemies = new ArrayList<>();
-        initializeEnemies();
+        // Definir o mapa inicial
+        mapLoader.getMaps();
+        if (!mapLoader.getMaps().isEmpty()) {
+            setCurrentMap(mapLoader.getMaps().get(0).getName());
+        }
+
+        // Inicializar inimigos e NPCs
+        initializeEntities();
     }
 
-    private void initializeEnemies() {
+    private void initializeEntities() {
         enemies.clear();
-        MapStructure currentMap = map.getCurrentMap();
+        npcs.clear();
+
+        MapStructure currentMap = gameMap.getCurrentMap();
         if (currentMap == null) return;
 
-        int[][] grid = currentMap.getGrid();
-        for (int y = 0; y < grid.length; y++) {
-            for (int x = 0; x < grid[y].length; x++) {
-                int tileNumber = grid[y][x];
-                TileDefinition tileDef = currentMap.getTileDefinition(tileNumber);
-                if (tileDef != null && tileDef.isEnemy()) {
-                    // Criar inimigo na posição central do tile
-                    int enemyX = x * map.getTileSize() + (map.getTileSize() - 32) / 2;
-                    int enemyY = y * map.getTileSize() + (map.getTileSize() - 32) / 2;
-                    String path = "/images/" + tileDef.getSpriteName() + ".png";
-                    enemies.add(new Enemy(enemyX, enemyY, map, path));
-                }
-            }
+        // Associar o mapa às entidades
+        for (Enemy enemy : currentMap.getEnemies()) {
+            enemy.setGameMap(gameMap);
+            enemies.add(enemy);
+        }
+
+        for (NPC npc : currentMap.getNpcs()) {
+            npc.setGameMap(gameMap);
+            npcs.add(npc);
         }
     }
 
     // Método para trocar de mapa
     public void switchMap(String mapName) {
-        map.setCurrentMap(mapName);
+        gameMap.setCurrentMap(mapName);
         // Reposicionar o jogador conforme necessário
-        player.setPosition(100, 100); // Exemplo: reposicionar no início
-        // Re-inicializar inimigos
-        initializeEnemies();
+        player.setPosition(100, 100);
+
+        // Re-inicializar inimigos e NPCs
+        initializeEntities();
     }
 
     public synchronized void start() {
@@ -144,6 +149,9 @@ public class Game extends JPanel implements Runnable {
         for (Enemy enemy : enemies) {
             enemy.update();
         }
+        for (NPC npc : npcs) {
+            npc.update();
+        }
 
         // Atualizar a câmera para seguir o jogador
         camera.update(player);
@@ -167,7 +175,7 @@ public class Game extends JPanel implements Runnable {
             g.clearRect(0, 0, WIDTH, HEIGHT);
 
             // Renderizar o mapa com a câmera
-            map.render(g, camera);
+            gameMap.render(g, camera);
 
             // Renderizar o jogador
             player.render(g, camera);
@@ -175,6 +183,11 @@ public class Game extends JPanel implements Runnable {
             // Renderizar inimigos
             for (Enemy enemy : enemies) {
                 enemy.render(g, camera);
+            }
+
+            // Renderizar NPCs
+            for (NPC npc : npcs) {
+                npc.render(g, camera);
             }
 
             // Desenhar o buffer na tela
@@ -193,5 +206,14 @@ public class Game extends JPanel implements Runnable {
 
     public boolean isRunning() {
         return running;
+    }
+
+    private void setCurrentMap(String mapName) {
+        gameMap = new GameMap(mapLoader, mapName);
+        camera.setGameMap(gameMap);
+        portalManager.setGameMap(gameMap);
+        // Reposicionar o jogador no novo mapa
+        player.setGameMap(gameMap);
+        switchMap(mapName);
     }
 }

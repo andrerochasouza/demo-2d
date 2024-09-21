@@ -2,7 +2,7 @@ package br.com.andre.entities;
 
 import br.com.andre.camera.Camera;
 import br.com.andre.input.KeyManager;
-import br.com.andre.map.Map;
+import br.com.andre.map.GameMap;
 import br.com.andre.utils.ResourceLoader;
 
 import java.awt.Graphics;
@@ -10,14 +10,12 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
-
     private double speed = 4.0;
     private BufferedImage sprite;
-
     private KeyManager keyManager;
 
-    public Player(double x, double y, Map map, KeyManager keyManager) {
-        super(x, y, 32, 32, map);
+    public Player(double x, double y, GameMap gameMap, KeyManager keyManager) {
+        super(x, y, 32, 32, gameMap);
         this.keyManager = keyManager;
         loadSprite();
     }
@@ -58,14 +56,14 @@ public class Player extends Entity {
 
     private boolean isColliding(double newX, double newY) {
         // Verificar os quatro cantos da entidade
-        int tileSize = map.getTileSize();
+        int tileSize = gameMap.getTileSize();
         int left = (int) newX / tileSize;
         int right = (int) (newX + width) / tileSize;
         int top = (int) newY / tileSize;
         int bottom = (int) (newY + height) / tileSize;
 
-        if (map.isSolidTile(left, top) || map.isSolidTile(right, top) ||
-                map.isSolidTile(left, bottom) || map.isSolidTile(right, bottom)) {
+        if (gameMap.isSolidTile(left, top) || gameMap.isSolidTile(right, top) ||
+                gameMap.isSolidTile(left, bottom) || gameMap.isSolidTile(right, bottom)) {
             return true;
         }
 

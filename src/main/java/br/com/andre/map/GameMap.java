@@ -1,28 +1,27 @@
 package br.com.andre.map;
 
 import br.com.andre.camera.Camera;
+import br.com.andre.entities.Enemy;
+import br.com.andre.entities.NPC;
 import br.com.andre.utils.ResourceLoader;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
-public class Map {
-    private MapStructure currentMap;
+public class GameMap {
     private MapLoader mapLoader;
-    private final int TILE_SIZE = 64;
+    private MapStructure currentMap;
+    public static final int TILE_SIZE = 64;
 
     // Armazena sprites carregadas para evitar recarregamentos
     private java.util.Map<String, BufferedImage> sprites;
 
-    public Map(String structFilePath) {
-        mapLoader = new MapLoader(structFilePath);
+    public GameMap(MapLoader mapLoader, String mapName) {
+        this.mapLoader = mapLoader;
         sprites = new HashMap<>();
         loadSprites();
-        // Definir o mapa inicial, por exemplo, o primeiro mapa carregado
-        if (!mapLoader.getMaps().isEmpty()) {
-            setCurrentMap(mapLoader.getMaps().get(0).getName());
-        }
+        setCurrentMap(mapName);
     }
 
     private void loadSprites() {
@@ -36,6 +35,33 @@ public class Map {
                         sprites.put(spriteName, sprite);
                     } else {
                         System.err.println("Sprite não encontrada: " + spriteName + ".png");
+                    }
+                }
+            }
+        }
+
+        // Carregar sprites de entidades
+        for (MapStructure mapStruct : mapLoader.getMaps()) {
+            for (Enemy enemy : mapStruct.getEnemies()) {
+                String spriteName = enemy.getSpritePath();
+                if (!sprites.containsKey(spriteName)) {
+                    BufferedImage sprite = ResourceLoader.loadImage(spriteName);
+                    if (sprite != null) {
+                        sprites.put(spriteName, sprite);
+                    } else {
+                        System.err.println("Sprite do inimigo não encontrada: " + spriteName);
+                    }
+                }
+            }
+
+            for (NPC npc : mapStruct.getNpcs()) {
+                String spriteName = npc.getSpritePath();
+                if (!sprites.containsKey(spriteName)) {
+                    BufferedImage sprite = ResourceLoader.loadImage(spriteName);
+                    if (sprite != null) {
+                        sprites.put(spriteName, sprite);
+                    } else {
+                        System.err.println("Sprite do NPC não encontrada: " + spriteName);
                     }
                 }
             }
@@ -71,10 +97,10 @@ public class Map {
         int[][] grid = currentMap.getGrid();
 
         // Determinar a área visível com base na câmera
-        int startX = (int) Math.max(0, camera.getX() / TILE_SIZE);
-        int startY = (int) Math.max(0, camera.getY() / TILE_SIZE);
-        int endX = (int) Math.min(grid[0].length, (camera.getX() + camera.getWidth()) / TILE_SIZE + 1);
-        int endY = (int) Math.min(grid.length, (camera.getY() + camera.getHeight()) / TILE_SIZE + 1);
+        int startX = Math.max(0, (int) (camera.getX() / TILE_SIZE));
+        int startY = Math.max(0, (int) (camera.getY() / TILE_SIZE));
+        int endX = Math.min(grid[0].length, (int) ((camera.getX() + camera.getWidth()) / TILE_SIZE) + 1);
+        int endY = Math.min(grid.length, (int) ((camera.getY() + camera.getHeight()) / TILE_SIZE) + 1);
 
         for (int y = startY; y < endY; y++) {
             for (int x = startX; x < endX; x++) {
@@ -84,16 +110,12 @@ public class Map {
                     BufferedImage sprite = sprites.get(tileDef.getSpriteName());
                     if (sprite != null) {
                         g.drawImage(sprite,
-                                (int) (x * TILE_SIZE - camera.getX()),
-                                (int) (y * TILE_SIZE - camera.getY()),
+                                x * TILE_SIZE - (int) camera.getX(),
+                                y * TILE_SIZE - (int) camera.getY(),
                                 TILE_SIZE, TILE_SIZE, null);
                     } else {
                         // Desenhar um retângulo se a sprite não estiver disponível
-                        if (tileDef.isSolid()) {
-                            g.setColor(java.awt.Color.DARK_GRAY);
-                        } else {
-                            g.setColor(java.awt.Color.LIGHT_GRAY);
-                        }
+                        g.setColor(tileDef.isSolid() ? Color.DARK_GRAY : Color.LIGHT_GRAY);
                         g.fillRect(x * TILE_SIZE - (int) camera.getX(),
                                 y * TILE_SIZE - (int) camera.getY(),
                                 TILE_SIZE, TILE_SIZE);
@@ -118,5 +140,10 @@ public class Map {
 
     public int getTileSize() {
         return TILE_SIZE;
+    }
+
+    // Método para obter sprites
+    public BufferedImage getSprite(String spriteName) {
+        return sprites.get(spriteName);
     }
 }

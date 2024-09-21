@@ -1,49 +1,53 @@
 package br.com.andre.portal;
 
+import br.com.andre.core.Game;
 import br.com.andre.entities.Player;
-import br.com.andre.map.Map;
+import br.com.andre.map.GameMap;
 import br.com.andre.map.MapStructure;
 
+import java.awt.Rectangle;
 import java.util.List;
 
 public class PortalManager {
-    private Map map;
+    private GameMap gameMap;
+    private Game game; // Referência ao jogo para trocar mapas
 
-    public PortalManager(Map map) {
-        this.map = map;
+    public PortalManager(GameMap gameMap, Game game) {
+        this.gameMap = gameMap;
+        this.game = game;
+    }
+
+    public void setGameMap(GameMap gameMap) {
+        this.gameMap = gameMap;
     }
 
     public void checkPortals(Player player) {
-        MapStructure currentMap = map.getCurrentMap();
-        if (currentMap == null) return;
+        MapStructure currentMapStructure = gameMap.getCurrentMap();
+        if (currentMapStructure == null) return;
 
-        List<Portal> portals = currentMap.getPortals();
+        List<Portal> portals = currentMapStructure.getPortals();
         for (Portal portal : portals) {
-            int portalPixelX = portal.getTileX() * map.getTileSize();
-            int portalPixelY = portal.getTileY() * map.getTileSize();
+            int portalPixelX = portal.getTileX() * gameMap.getTileSize();
+            int portalPixelY = portal.getTileY() * gameMap.getTileSize();
 
-            // Verificar colisão com o portal (assumindo que o portal ocupa todo o tile)
-            if (player.getBounds().intersects(
-                    portalPixelX,
-                    portalPixelY,
-                    map.getTileSize(),
-                    map.getTileSize())) {
+            // Assumindo que o portal ocupa todo o tile
+            Rectangle portalBounds = new Rectangle(portalPixelX, portalPixelY, gameMap.getTileSize(), gameMap.getTileSize());
+            if (player.getBounds().intersects(portalBounds)) {
                 // Trocar de mapa
-                String destinationMapName = portal.getDestinationMap(); // Ajustar conforme a necessidade
+                String destinationMapName = portal.getDestinationMap();
 
                 // Reposicionar o jogador
-                double destX = portal.getDestTileX() * map.getTileSize() + (map.getTileSize() - player.getWidth()) / 2;
-                double destY = portal.getDestTileY() * map.getTileSize() + (map.getTileSize() - player.getHeight()) / 2;
+                double destX = portal.getDestTileX() * gameMap.getTileSize() + (gameMap.getTileSize() - player.getWidth()) / 2;
+                double destY = portal.getDestTileY() * gameMap.getTileSize() + (gameMap.getTileSize() - player.getHeight()) / 2;
 
-                // Atualizar o mapa
-                map.setCurrentMap(destinationMapName);
+                // Atualizar o mapa no jogo
+                game.switchMap(destinationMapName);
+
+                // Reposicionar o jogador
                 player.setPosition(destX, destY);
 
-                // Re-inicializar inimigos
-                // Isto deve ser feito na classe Game, então vamos precisar de uma referência
-                // Para simplificar, você pode emitir um evento ou usar um callback
-                // Aqui, vamos apenas imprimir uma mensagem
-                System.out.println("Porta para " + destinationMapName + " ativada.");
+                // Imprimir mensagem
+                System.out.println("Portal para " + destinationMapName + " ativada.");
 
                 // Resetar o PortalManager se necessário
                 break; // Evitar múltiplas trocas de mapa de uma vez

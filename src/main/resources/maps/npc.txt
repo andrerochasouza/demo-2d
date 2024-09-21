@@ -1,0 +1,4 @@
+# name png life
+Merchant merchant.png 10.0
+Dragon dragon.png 50.0
+Orc orc.png 7.0
